@@ -431,7 +431,28 @@ void HandleNoteOff(byte channel, byte pitch, byte velocity) {
   } 
 }
 
+
+byte lastByte = 0x00;
+int iterator = -1;
+void manageSerial(byte a) {
+  if (a == 0xFF && lastByte == 0xFF) {
+    iterator = 0;
+  }
+  if (iterator % 2 == 1) {
+    retrocade.sid.writeData(a, lastByte);
+    iterator = -1;
+  }
+  iterator++;
+  lastByte = a;
+}
+
+
 void loop(){
+  if (Serial.available() > 0) {
+        int incomingByte = Serial.read();
+        manageSerial(incomingByte);
+   }
+  
     retrocade.sid.writeData(0x00, 0x20);//freqHi
     retrocade.sid.writeData(0x01, 0x20);//freqLo    
     retrocade.sid.writeData(0x05, 0x28);//ad
