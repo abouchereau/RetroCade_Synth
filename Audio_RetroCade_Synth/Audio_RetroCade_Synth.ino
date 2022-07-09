@@ -437,17 +437,17 @@ boolean isSecondByte = false;
 void manageSerial(byte a) {
 //  Serial.print("incoming ");
 //  Serial.println(a);
-  if (a == 0xFF && lastByte == 0xFF) {//init (utile ?)
+  //if (a == 0xFF && lastByte == 0xFF) {//init (utile ?)
   
 //    Serial.println("INIT ");
-    isSecondByte = false;
-    return;
-  }
+   // isSecondByte = false;
+  //  return;
+//  }
   if (isSecondByte) {
-//    Serial.print("WRITE DATA ");
-//    Serial.print(lastByte);
-//    Serial.print(" ");
-//    Serial.println(a);
+    Serial.print("WRITE DATA ");
+    Serial.print(lastByte);
+    Serial.print(" ");
+    Serial.println(a);
     retrocade.sid.writeData(lastByte, a);
   }
   isSecondByte = !isSecondByte;
@@ -460,5 +460,28 @@ void loop(){
         int incomingByte = Serial.read();
         manageSerial(incomingByte);
    }
+ // test();
 }
+
+void test() {
+    retrocade.sid.writeData(0x00, 0x20);//freqHi
+    retrocade.sid.writeData(0x01, 0x20);//freqLo    
+    retrocade.sid.writeData(0x05, 0x28);//ad
+    retrocade.sid.writeData(0x06, 0x89);//sr
+    retrocade.sid.writeData(0x04, 0x41);//wavefrom gate
+    
+    retrocade.sid.writeData(0x07, 0x20);//freqHi
+    retrocade.sid.writeData(0x08, 0x16);//freqLo    
+    retrocade.sid.writeData(0x0C, 0x28);//ad
+    retrocade.sid.writeData(0x0D, 0x89);//sr
+    retrocade.sid.writeData(0x0B, 0x41);//wavefrom gate
+
+
+    delay(500);
+    //retrocade.sid.V1.setNote(60,0);
+    retrocade.sid.writeData(0x04, 0x40);//wavefrom gate
+    retrocade.sid.writeData(0x0B, 0x40);//wavefrom gate
+    delay(500);
+  }
+
 
