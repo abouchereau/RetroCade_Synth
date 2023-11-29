@@ -453,7 +453,7 @@ void manageSerial(byte a) {
         retrocade.sidplayer.play(true);
     }
     if (lastByte == 0xFE) {//TODO voir la valeur à passer
-            retrocade.sidplayer.stop();
+            retrocade.sidplayer.play(false);
         }
     else {
         retrocade.sid.writeData(lastByte, a);
