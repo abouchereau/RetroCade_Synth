@@ -434,7 +434,7 @@ void HandleNoteOff(byte channel, byte pitch, byte velocity) {
 
 byte lastByte = 0x00;
 boolean isSecondByte = false;
-boolean sidDebug = false;
+boolean sidDebug = true;
 
 void manageSerial(byte a) {
 //  Serial.print("incoming ");
@@ -449,13 +449,25 @@ void manageSerial(byte a) {
     if (sidDebug) {
       Serial.print(lastByte>>4,  HEX);
       Serial.print(lastByte&0x0F,HEX);
-      Serial.print(" ");
+      Serial.print(":");
       Serial.print(a>>4,  HEX);
-      Serial.println(a&0x0F,HEX);    
+      Serial.print(a&0x0F,HEX);  
+      Serial.print(",");  
     }
 
     if (lastByte == 0xFF) {
-        retrocade.sidplayer.loadFile(a+".sid");
+      String filename = "track"+String(a)+".sid";
+      Serial.print(filename);
+      Serial.print(",");
+      
+        if (SD.exists(filename)) {
+          Serial.print("OK");
+        }
+        else {
+          Serial.print("KO");
+        }
+      
+        retrocade.sidplayer.loadFile(filename);
         retrocade.sidplayer.play(true);
     }
     else if (lastByte == 0xFE) {
@@ -475,9 +487,6 @@ void manageSerial(byte a) {
   lastByte = a;
 }
 
-
-Serial.print(b>>4,  HEX);
-Serial.print(b&0x0F,HEX);
 
 
 void loop(){
