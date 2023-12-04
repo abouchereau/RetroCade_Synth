@@ -434,6 +434,8 @@ void HandleNoteOff(byte channel, byte pitch, byte velocity) {
 
 byte lastByte = 0x00;
 boolean isSecondByte = false;
+boolean sidDebug = false;
+
 void manageSerial(byte a) {
 //  Serial.print("incoming ");
 //  Serial.println(a);
@@ -444,17 +446,27 @@ void manageSerial(byte a) {
   //  return;
 //  }
   if (isSecondByte) {
-    Serial.print("WRITE DATA ");
-    Serial.print(lastByte);
-    Serial.print(" ");
-    Serial.println(a);
-    if (lastByte == 0xFF) {//TODO voir la valeur à passer
+    if (sidDebug) {
+      Serial.print(lastByte>>4,  HEX);
+      Serial.print(lastByte&0x0F,HEX);
+      Serial.print(" ");
+      Serial.print(a>>4,  HEX);
+      Serial.println(a&0x0F,HEX);    
+    }
+
+    if (lastByte == 0xFF) {
         retrocade.sidplayer.loadFile(a+".sid");
         retrocade.sidplayer.play(true);
     }
-    if (lastByte == 0xFE) {//TODO voir la valeur à passer
+    else if (lastByte == 0xFE) {
             retrocade.sidplayer.play(false);
-        }
+    }
+    else if (lastByte == 0xF0) {
+            sidDebug = true;
+    }
+    else if (lastByte == 0xF1) {
+            sidDebug = false;
+    }
     else {
         retrocade.sid.writeData(lastByte, a);
     }
@@ -462,6 +474,10 @@ void manageSerial(byte a) {
   isSecondByte = !isSecondByte;
   lastByte = a;
 }
+
+
+Serial.print(b>>4,  HEX);
+Serial.print(b&0x0F,HEX);
 
 
 void loop(){
