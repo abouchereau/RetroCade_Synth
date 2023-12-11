@@ -124,6 +124,10 @@ ChangeLog:
 byte lastpitch[8];
 File root;
 
+byte arrayBuff1[16];
+byte arrayBuff2[16];
+int iterate=0;
+
 int sidplayercounter = 0;
 
 //#define DEBUG
@@ -214,8 +218,9 @@ bool timer(void*)
   retrocade.modplayer.zpu_interrupt();
   retrocade.ymplayer.zpu_interrupt(); 
   if (sidplayercounter == 340) {
-    retrocade.sidplayer.zpu_interrupt(); 
+    retrocade.sidplayer.zpu_interrupt();     
     sidplayercounter = 1;
+//    playSid();
   }
   retrocade.setTimeout();
   return true;
@@ -434,17 +439,17 @@ void HandleNoteOff(byte channel, byte pitch, byte velocity) {
 
 byte lastByte = 0x00;
 boolean isSecondByte = false;
-boolean sidDebug = true;
+boolean sidDebug = false;
 
 void manageSerial(byte a) {
 //  Serial.print("incoming ");
 //  Serial.println(a);
-  //if (a == 0xFF && lastByte == 0xFF) {//init (utile ?)
+  if (a == 0xFF && lastByte == 0xFF) {//init (utile ?)
   
 //    Serial.println("INIT ");
-   // isSecondByte = false;
-  //  return;
-//  }
+    isSecondByte = false;
+    return;
+  }
   if (isSecondByte) {
     if (sidDebug) {
       Serial.print(lastByte>>4,  HEX);
@@ -455,31 +460,16 @@ void manageSerial(byte a) {
       Serial.print(",");  
     }
 
-    if (lastByte == 0xFF) {
-      String filename = "track"+String(a)+".sid";
-      Serial.print(filename);
-      Serial.print(",");
-      
-        if (SD.exists(filename)) {
-          Serial.print("OK");
-        }
-        else {
-          Serial.print("KO");
-        }
-      
-        retrocade.sidplayer.loadFile(filename);
-        retrocade.sidplayer.play(true);
-    }
-    else if (lastByte == 0xFE) {
-            retrocade.sidplayer.play(false);
-    }
-    else if (lastByte == 0xF0) {
+    if (lastByte == 0xF0) {
             sidDebug = true;
     }
     else if (lastByte == 0xF1) {
             sidDebug = false;
     }
     else {
+     /* arrayBuff1[iterate] = lastByte;
+      arrayBuff2[iterate] = a;
+      iterate++;*/
         retrocade.sid.writeData(lastByte, a);
     }
   }
@@ -487,6 +477,12 @@ void manageSerial(byte a) {
   lastByte = a;
 }
 
+void playSid() {
+  for (int i = 0;i<iterate;i++) {
+    retrocade.sid.writeData(arrayBuff1[i],arrayBuff2[i]);
+  }
+  iterate=0;
+}
 
 
 void loop(){
